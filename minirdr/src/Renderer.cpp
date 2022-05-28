@@ -1,5 +1,6 @@
 #include "Renderer.h"
 #include "Renderer/CommandPool.h"
+#include "Renderer/CommandQueue.h"
 #include "Renderer/ShaderDescriptorHeap.h"
 #include "Renderer/SwapChain.h"
 #include "imgui_impl_sdl.h"
@@ -79,6 +80,7 @@ Renderer::~Renderer()
     delete m_CbvSrvUavHeap;
     delete m_SamplerHeap;
     delete m_SwapChain;
+    delete m_CommandQueue;
     m_Device->Release();
 }
 
@@ -145,7 +147,7 @@ void Renderer::EndFrame()
         commandList->Close()
     );
 
-    m_CommandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&commandList);
+    m_CommandQueue->SubmitCommands(1, (ID3D12CommandList**)&commandList);
 
     m_SwapChain->Present();
 
@@ -178,15 +180,11 @@ void Renderer::InitDevice(IDXGIAdapter* adapter)
 
 void Renderer::InitCommandQueue()
 {
-    D3D12_COMMAND_QUEUE_DESC desc;
-    desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-    desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-    desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-    desc.NodeMask = 0;
+    CommandQueue::CreateInfo info;
+    info.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    info.Device = m_Device;
 
-    MINIRDR_CHKHR(
-        m_Device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue))
-    );
+    m_CommandQueue = new CommandQueue(info);
 }
 
 IDXGIFactory6* Renderer::CreateFactory()

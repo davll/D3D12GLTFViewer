@@ -5,6 +5,7 @@
 namespace minirdr {
 
 class CommandPool;
+class CommandQueue;
 class ShaderDescriptorHeap;
 class SwapChain;
 
@@ -48,7 +49,7 @@ private:
     const UINT m_NumFrames;
     UINT m_FrameIdx;
     ID3D12Device* m_Device;
-    ID3D12CommandQueue* m_CommandQueue;
+    CommandQueue* m_CommandQueue;
     std::vector<std::unique_ptr<CommandPool>> m_CommandPools;
     ShaderDescriptorHeap* m_CbvSrvUavHeap;
     ShaderDescriptorHeap* m_SamplerHeap;

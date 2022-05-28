@@ -4,13 +4,15 @@
 
 namespace minirdr {
 
+class CommandQueue;
+
 class SwapChain {
 public:
     struct CreateInfo {
         UINT NumFrames;
         IDXGIFactory6* Factory;
         ID3D12Device* Device;
-        ID3D12CommandQueue* CommandQueue;
+        CommandQueue* CommandQueue;
         SDL_Window* Window;
     };
 
@@ -20,8 +22,8 @@ public:
     inline IDXGISwapChain3* GetSwapChain() const;
     inline ID3D12Resource* GetBackBuffer() const;
     inline D3D12_CPU_DESCRIPTOR_HANDLE GetRenderTargetView() const;
-    inline void WaitAll();
 
+    void WaitAll();
     void Present();
     void Resize();
 
@@ -31,18 +33,16 @@ private:
     void WriteDescriptors();
     void SetupBuffers();
     void ClearBuffers();
-    void Wait(UINT64 frameId);
+    void Wait(UINT64 workId);
 
 private:
     const UINT m_NumFrames;
     ID3D12Device* m_Device;
-    ID3D12CommandQueue* m_CommandQueue;
+    CommandQueue* m_CommandQueue;
 
     IDXGISwapChain3* m_SwapChain;
 
-    UINT64 m_FrameCount;
-    std::vector<UINT64> m_FrameIds;
-    ID3D12Fence* m_Fence;
+    std::vector<UINT64> m_PresentWorkIds;
     HANDLE m_FenceEvent;
 
     std::vector<ID3D12Resource*> m_BackBuffers;
@@ -68,11 +68,6 @@ inline D3D12_CPU_DESCRIPTOR_HANDLE SwapChain::GetRenderTargetView() const
     D3D12_CPU_DESCRIPTOR_HANDLE handle = m_RenderTargetViewBase;
     handle.ptr += m_RenderTargetViewDescriptorSize * frameIdx;
     return handle;
-}
-
-inline void SwapChain::WaitAll()
-{
-    Wait(m_FrameCount);
 }
 
 }

@@ -1,18 +1,17 @@
 #include "SwapChain.h"
+#include "CommandQueue.h"
 #include <SDL_syswm.h>
 
 namespace minirdr {
 
 SwapChain::SwapChain(const CreateInfo& info)
 : m_NumFrames(info.NumFrames)
-, m_FrameCount(0)
-, m_FrameIds((size_t)info.NumFrames, 0)
+, m_PresentWorkIds((size_t)info.NumFrames, 0)
 , m_Device(info.Device)
 , m_CommandQueue(info.CommandQueue)
 , m_BackBuffers((size_t)info.NumFrames)
 {
     m_Device->AddRef();
-    m_CommandQueue->AddRef();
     Init(info);
 }
 
@@ -20,31 +19,28 @@ SwapChain::~SwapChain()
 {
     WaitAll();
 
-    m_Fence->Release();
     CloseHandle(m_FenceEvent);
 
     m_RenderTargetViewHeap->Release();
     ClearBuffers();
     m_SwapChain->Release();
-    m_CommandQueue->Release();
+    m_CommandQueue = NULL;
     m_Device->Release();
 }
 
 void SwapChain::Present()
 {
-    UINT64 frameId = ++m_FrameCount;
-    m_FrameIds[m_SwapChain->GetCurrentBackBufferIndex()] = frameId;
+    UINT prevBufferIdx = m_SwapChain->GetCurrentBackBufferIndex();
 
     MINIRDR_CHKHR(
         m_SwapChain->Present(1, 0)
     );
 
-    MINIRDR_CHKHR(
-        m_CommandQueue->Signal(m_Fence, frameId)
-    );
+    UINT64 workId = m_CommandQueue->SubmitSignal();
+    m_PresentWorkIds[prevBufferIdx] = workId;
 
-    frameId = m_FrameIds[m_SwapChain->GetCurrentBackBufferIndex()];
-    Wait(frameId);
+    workId = m_PresentWorkIds[m_SwapChain->GetCurrentBackBufferIndex()];
+    Wait(workId);
 }
 
 void SwapChain::Resize()
@@ -56,14 +52,16 @@ void SwapChain::Resize()
     WriteDescriptors();
 }
 
-void SwapChain::Wait(UINT64 frameId)
+void SwapChain::Wait(UINT64 workId)
 {
-    if (m_Fence->GetCompletedValue() < frameId) {
-        MINIRDR_CHKHR(
-            m_Fence->SetEventOnCompletion(frameId, m_FenceEvent)
-        );
+    if (m_CommandQueue->SetWaitEvent(m_FenceEvent, workId)) {
         WaitForSingleObject(m_FenceEvent, INFINITE);
     }
+}
+
+void SwapChain::WaitAll()
+{
+    Wait(m_CommandQueue->GetWorkCount());
 }
 
 void SwapChain::Init(const CreateInfo& info)
@@ -92,9 +90,11 @@ void SwapChain::Init(const CreateInfo& info)
     desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
     desc.Flags = 0;
 
+    ID3D12CommandQueue* commandQueue = info.CommandQueue->GetCommandQueue();
+
     IDXGISwapChain1* swapChain1;
     MINIRDR_CHKHR(
-        info.Factory->CreateSwapChainForHwnd(info.CommandQueue, hwnd, &desc, NULL, NULL, &swapChain1)
+        info.Factory->CreateSwapChainForHwnd(commandQueue, hwnd, &desc, NULL, NULL, &swapChain1)
     );
 
     IDXGISwapChain3* swapChain3;
@@ -103,10 +103,6 @@ void SwapChain::Init(const CreateInfo& info)
     );
     swapChain1->Release();
     m_SwapChain = swapChain3;
-
-    MINIRDR_CHKHR(
-        info.Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_Fence))
-    );
 
     m_FenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     if (!m_FenceEvent) {

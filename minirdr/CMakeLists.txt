@@ -9,6 +9,8 @@ add_library(minirdr STATIC
     src/Renderer/CommandManager.cpp
     src/Renderer/CommandPool.h
     src/Renderer/CommandPool.cpp
+    src/Renderer/CommandQueue.h
+    src/Renderer/CommandQueue.cpp
     src/Renderer/ShaderDescriptorHeap.h
     src/Renderer/ShaderDescriptorHeap.cpp
     src/Renderer/SwapChain.h
