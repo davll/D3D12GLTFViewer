@@ -6,7 +6,7 @@
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_dx12.h"
 
-namespace minirdr {
+namespace mrdr {
 
 Renderer::Renderer(const CreateInfo& info)
 : m_NumFrames(info.NumFrames)
@@ -143,7 +143,7 @@ void Renderer::EndFrame()
         commandList->ResourceBarrier(1, &rbdesc);
     }
 
-    MINIRDR_CHKHR(
+    MRDR_CHKHR(
         commandList->Close()
     );
 
@@ -165,14 +165,14 @@ void Renderer::InitDevice(IDXGIAdapter* adapter)
 
     hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_Device));
     if (FAILED(hr)) {
-        MINIRDR_FAIL("Failed to create D3D12 device");
+        MRDR_FAIL("Failed to create D3D12 device");
     }
 
 #if defined(_DEBUG) && 0
     ID3D12InfoQueue* infoQueue;
     hr = m_Device->QueryInterface(IID_PPV_ARGS(&infoQueue));
     if (FAILED(hr)) {
-        MINIRDR_FAIL("Failed to get info queue");
+        MRDR_FAIL("Failed to get info queue");
     }
     infoQueue->Release();
 #endif
@@ -205,7 +205,7 @@ IDXGIFactory6* Renderer::CreateFactory()
     IDXGIFactory6* factory;
     hr = CreateDXGIFactory2(flags, IID_PPV_ARGS(&factory));
     if (FAILED(hr)) {
-        MINIRDR_FAIL("Failed to create DXGIFactory");
+        MRDR_FAIL("Failed to create DXGIFactory");
     }
 
     return factory;
@@ -225,7 +225,7 @@ IDXGIAdapter4* Renderer::ChooseAdapter(IDXGIFactory6* factory)
             DXGI_ADAPTER_DESC3 desc;
             hr = adapter->GetDesc3(&desc);
             if (FAILED(hr)) {
-                MINIRDR_FAIL("Failed to get adapter desc");
+                MRDR_FAIL("Failed to get adapter desc");
             }
 
             if (desc.Flags & DXGI_ADAPTER_FLAG3_SOFTWARE)
@@ -236,7 +236,7 @@ IDXGIAdapter4* Renderer::ChooseAdapter(IDXGIFactory6* factory)
                 break;
             }
         } else {
-            MINIRDR_FAIL("Failed to enumerate adapter");
+            MRDR_FAIL("Failed to enumerate adapter");
         }
     }
     return adapter;

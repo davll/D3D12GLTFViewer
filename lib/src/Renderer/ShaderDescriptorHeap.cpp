@@ -1,6 +1,6 @@
 #include "ShaderDescriptorHeap.h"
 
-namespace minirdr {
+namespace mrdr {
 
 ShaderDescriptorHeap::ShaderDescriptorHeap(const CreateInfo& info)
 : m_Type(info.Type)
@@ -27,7 +27,7 @@ void ShaderDescriptorHeap::InitDescriptorHeaps()
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     desc.NodeMask = 0;
 
-    MINIRDR_CHKHR(
+    MRDR_CHKHR(
         m_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_DescriptorHeap))
     );
 

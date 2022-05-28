@@ -6,7 +6,7 @@
 #include <vector>
 #include <deque>
 
-namespace minirdr {
+namespace mrdr {
 
 class CommandManager {
 public:

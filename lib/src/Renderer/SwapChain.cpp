@@ -2,7 +2,7 @@
 #include "CommandQueue.h"
 #include <SDL_syswm.h>
 
-namespace minirdr {
+namespace mrdr {
 
 SwapChain::SwapChain(const CreateInfo& info)
 : m_NumFrames(info.NumFrames)
@@ -32,7 +32,7 @@ void SwapChain::Present()
 {
     UINT prevBufferIdx = m_SwapChain->GetCurrentBackBufferIndex();
 
-    MINIRDR_CHKHR(
+    MRDR_CHKHR(
         m_SwapChain->Present(1, 0)
     );
 
@@ -72,7 +72,7 @@ void SwapChain::Init(const CreateInfo& info)
     SDL_SysWMinfo wminfo;
     SDL_VERSION(&wminfo.version);
     if (SDL_GetWindowWMInfo(info.Window, &wminfo) == 0) {
-        MINIRDR_FAIL("Unable to get SDL_WMInfo");
+        MRDR_FAIL("Unable to get SDL_WMInfo");
     }
     HWND hwnd = wminfo.info.win.window;
 
@@ -93,12 +93,12 @@ void SwapChain::Init(const CreateInfo& info)
     ID3D12CommandQueue* commandQueue = info.CommandQueue->GetCommandQueue();
 
     IDXGISwapChain1* swapChain1;
-    MINIRDR_CHKHR(
+    MRDR_CHKHR(
         info.Factory->CreateSwapChainForHwnd(commandQueue, hwnd, &desc, NULL, NULL, &swapChain1)
     );
 
     IDXGISwapChain3* swapChain3;
-    MINIRDR_CHKHR(
+    MRDR_CHKHR(
         swapChain1->QueryInterface(IID_PPV_ARGS(&swapChain3))
     );
     swapChain1->Release();
@@ -123,7 +123,7 @@ void SwapChain::InitDescriptorHeap()
         desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
         desc.NodeMask = 0;
 
-        MINIRDR_CHKHR(
+        MRDR_CHKHR(
             m_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_RenderTargetViewHeap))
         );
     }
@@ -151,7 +151,7 @@ void SwapChain::SetupBuffers()
 {
     for (UINT i = 0; i < m_NumFrames; ++i) {
         ID3D12Resource* buffer;
-        MINIRDR_CHKHR(
+        MRDR_CHKHR(
             m_SwapChain->GetBuffer(i, IID_PPV_ARGS(&buffer))
         );
         m_BackBuffers[i] = buffer;

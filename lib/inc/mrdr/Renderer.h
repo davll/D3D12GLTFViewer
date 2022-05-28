@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-namespace minirdr {
+namespace mrdr {
 
 class CommandPool;
 class CommandQueue;
@@ -56,4 +56,4 @@ private:
     SwapChain* m_SwapChain;
 };
 
-} // namespace minirdr
+} // namespace mrdr

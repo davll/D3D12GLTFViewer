@@ -1,9 +1,8 @@
 project(minirdr)
 
-add_library(minirdr STATIC
-    inc/minirdr/common.h
-    inc/minirdr/Renderer.h
-    src/minirdr.cpp
+add_library(mrdr STATIC
+    inc/mrdr/common.h
+    inc/mrdr/Renderer.h
     src/Renderer.cpp
     src/Renderer/CommandManager.h
     src/Renderer/CommandManager.cpp
@@ -17,12 +16,12 @@ add_library(minirdr STATIC
     src/Renderer/SwapChain.cpp
 )
 
-target_include_directories(minirdr
+target_include_directories(mrdr
     PUBLIC "inc"
-    PRIVATE "inc/minirdr"
+    PRIVATE "inc/mrdr"
 )
 
-target_link_libraries(minirdr
+target_link_libraries(mrdr
     PUBLIC
     spdlog::spdlog
     SDL2::SDL2
@@ -30,7 +29,7 @@ target_link_libraries(minirdr
     d3d12 dxgi
 )
 
-target_precompile_headers(minirdr
+target_precompile_headers(mrdr
     PUBLIC
-    inc/minirdr/common.h
+    inc/mrdr/common.h
 )

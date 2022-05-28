@@ -1,6 +1,6 @@
 #include "CommandManager.h"
 
-namespace minirdr {
+namespace mrdr {
 
 static inline D3D12_COMMAND_LIST_TYPE CommandTypeToD3D12(CommandType ty)
 {
@@ -80,7 +80,7 @@ void CommandManager::ResetCommands(UINT frameIdx)
             UINT64 workId = frame.SubmittedWorkIds[t];
             if (m_CommandFences[t]->GetCompletedValue() < workId) {
                 HANDLE event = m_CommandFenceEvents[t];
-                MINIRDR_CHKHR(
+                MRDR_CHKHR(
                     m_CommandFences[t]->SetEventOnCompletion(workId, event)
                 );
                 events[count++] = event;
@@ -126,7 +126,7 @@ ID3D12CommandAllocator* CommandManager::NewCommandAllocator(UINT frameIdx, Comma
     ID3D12CommandAllocator* commandAllocator;
 
     if (m_FreeCommandAllocators[(UINT)ty].empty()) {
-        MINIRDR_CHKHR(
+        MRDR_CHKHR(
             m_Device->CreateCommandAllocator(CommandTypeToD3D12(ty), IID_PPV_ARGS(&commandAllocator))
         );
     } else {
@@ -145,13 +145,13 @@ ID3D12GraphicsCommandList* CommandManager::NewCommandList(UINT frameIdx, Command
     ID3D12GraphicsCommandList* commandList;
 
     if (m_FreeCommandLists[(UINT)ty].empty()) {
-        MINIRDR_CHKHR(
+        MRDR_CHKHR(
             m_Device->CreateCommandList(0, CommandTypeToD3D12(ty), commandAllocator, NULL, IID_PPV_ARGS(&commandList))
         );
     } else {
         commandList = m_FreeCommandLists[(UINT)ty].front();
         m_FreeCommandLists[(UINT)ty].pop_front();
-        MINIRDR_CHKHR(
+        MRDR_CHKHR(
             commandList->Reset(commandAllocator, NULL)
         );
     }
@@ -169,7 +169,7 @@ void CommandManager::InitCommandQueues()
 
     for (UINT i = 0; i < (UINT)CommandType::_COUNT; ++i) {
         desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-        MINIRDR_CHKHR(
+        MRDR_CHKHR(
             m_Device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueues[i]))
         );
     }
@@ -178,7 +178,7 @@ void CommandManager::InitCommandQueues()
 void CommandManager::InitCommandFences()
 {
     for (UINT i = 0; i < (UINT)CommandType::_COUNT; ++i) {
-        MINIRDR_CHKHR(
+        MRDR_CHKHR(
             m_Device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&m_CommandFences[i]))
         );
     }

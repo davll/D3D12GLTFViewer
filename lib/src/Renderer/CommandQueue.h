@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-namespace minirdr {
+namespace mrdr {
 
 class CommandQueue {
 public:

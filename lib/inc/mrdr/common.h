@@ -17,11 +17,11 @@
 #include <SDL.h>
 #include <imgui.h>
 
-#define MINIRDR_INFO(...) SPDLOG_INFO(__VA_ARGS__)
-#define MINIRDR_FAIL(...) do { SPDLOG_ERROR(__VA_ARGS__); ::minirdr::abort(); } while(0)
-#define MINIRDR_CHKHR(hr) do { if (FAILED(hr)) { ::minirdr::abort(); } } while(0)
+#define MRDR_INFO(...) SPDLOG_INFO(__VA_ARGS__)
+#define MRDR_FAIL(...) do { SPDLOG_ERROR(__VA_ARGS__); ::mrdr::abort(); } while(0)
+#define MRDR_CHKHR(hr) do { if (FAILED(hr)) { ::mrdr::abort(); } } while(0)
 
-namespace minirdr {
+namespace mrdr {
 
 struct Size {
     UINT Width;
@@ -68,4 +68,4 @@ inline void abort()
 }
 #endif
 
-} // namespace minirdr
+} // namespace mrdr

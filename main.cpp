@@ -1,5 +1,5 @@
-#include <minirdr/common.h>
-#include <minirdr/Renderer.h>
+#include <mrdr/common.h>
+#include <mrdr/Renderer.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 #include <spdlog/sinks/msvc_sink.h>
@@ -24,10 +24,10 @@ int main(int argc, char* argv[])
     }
 
     // SPDLOG_INFO("TEST LOGGING");
-    // MINIRDR_FAIL("TEST FAIL");
+    // MRDR_FAIL("TEST FAIL");
 
     if (SDL_Init(SDL_INIT_EVERYTHING) != 0) {
-        MINIRDR_FAIL("Unable to initialize SDL: {}", SDL_GetError());
+        MRDR_FAIL("Unable to initialize SDL: {}", SDL_GetError());
     }
 
     {
@@ -36,11 +36,11 @@ int main(int argc, char* argv[])
             800, 600,
             SDL_WINDOW_RESIZABLE);
         if (!_window) {
-            MINIRDR_FAIL("Unable to create SDL window: {}", SDL_GetError());
+            MRDR_FAIL("Unable to create SDL window: {}", SDL_GetError());
         }
         std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> window(_window, &SDL_DestroyWindow);
 
-        minirdr::Renderer renderer(minirdr::Renderer::CreateInfo {
+        mrdr::Renderer renderer(mrdr::Renderer::CreateInfo {
             3,
             window.get(),
         });
