@@ -96,6 +96,7 @@ void Renderer::EndFrame()
     const UINT frameIdx = m_FrameIdx;
 
     auto& commandPool = m_CommandPools[m_FrameIdx];
+    commandPool->Reset();
     ID3D12CommandAllocator* commandAllocator = commandPool->NewCommandAllocator();
     ID3D12GraphicsCommandList* commandList = commandPool->NewCommandList(commandAllocator);
 

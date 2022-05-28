@@ -24,6 +24,11 @@ CommandPool::~CommandPool()
 
 void CommandPool::Reset()
 {
+    for (UINT i = 0; i < m_NumUsedCommandAllocators; ++i) {
+        MRDR_CHKHR(
+            m_CommandAllocators[i]->Reset()
+        );
+    }
     m_NumUsedCommandAllocators = 0;
     m_NumUsedCommandLists = 0;
 }
