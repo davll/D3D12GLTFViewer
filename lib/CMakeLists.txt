@@ -14,6 +14,7 @@ add_library(mrdr STATIC
     src/Renderer/ShaderDescriptorHeap.cpp
     src/Renderer/SwapChain.h
     src/Renderer/SwapChain.cpp
+    src/tinygltf.cpp
 )
 
 target_include_directories(mrdr
@@ -26,6 +27,7 @@ target_link_libraries(mrdr
     spdlog::spdlog
     SDL2::SDL2
     imgui imgui-sdl2 imgui-dx12
+    tinygltf json stb
     d3d12 dxgi
 )
 

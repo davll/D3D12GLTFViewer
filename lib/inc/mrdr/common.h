@@ -2,20 +2,22 @@
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <d3d12.h>
+#include <dxgi1_6.h>
 
 #include <intrin.h>
 #include <stdlib.h>
 #include <stdint.h>
-#include <spdlog/spdlog.h>
-#include <d3d12.h>
-#include <dxgi1_6.h>
 #include <array>
 #include <memory>
 #include <vector>
 #include <deque>
 
+#include <spdlog/spdlog.h>
+
 #include <SDL.h>
 #include <imgui.h>
+#include <tiny_gltf.h>
 
 #define MRDR_INFO(...) SPDLOG_INFO(__VA_ARGS__)
 #define MRDR_FAIL(...) do { SPDLOG_ERROR(__VA_ARGS__); ::mrdr::abort(); } while(0)
