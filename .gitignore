@@ -1,0 +1,6 @@
+/[Bb]uild*
+/.vscode
+.DS_Store
+*.swp
+*~
+/imgui.ini

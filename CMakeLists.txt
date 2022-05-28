@@ -1,0 +1,16 @@
+cmake_minimum_required(VERSION 3.16)
+project(D3D12GLTFViewer CXX)
+
+find_package(SDL2 CONFIG REQUIRED)
+find_package(spdlog CONFIG REQUIRED)
+
+add_subdirectory(extern)
+add_subdirectory(minirdr)
+
+add_executable(D3D12GLTFViewer
+    main.cpp)
+
+target_link_libraries(D3D12GLTFViewer PRIVATE
+    minirdr
+    SDL2::SDL2 SDL2::SDL2main
+)
