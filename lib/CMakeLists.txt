@@ -25,7 +25,7 @@ target_link_libraries(mrdr
     PUBLIC
     spdlog::spdlog
     SDL2::SDL2
-    imgui
+    imgui imgui-sdl2 imgui-dx12
     d3d12 dxgi
 )
 
