@@ -1,5 +1,5 @@
 #include "Renderer.h"
-#include "Renderer/CommandManager.h"
+#include "Renderer/CommandPool.h"
 #include "Renderer/ShaderDescriptorHeap.h"
 #include "Renderer/SwapChain.h"
 #include "imgui_impl_sdl.h"
@@ -15,6 +15,17 @@ Renderer::Renderer(const CreateInfo& info)
     IDXGIAdapter4* adapter = ChooseAdapter(factory);
     InitDevice(adapter);
     adapter->Release();
+    InitCommandQueue();
+    {
+        SwapChain::CreateInfo cinfo;
+        cinfo.NumFrames = info.NumFrames;
+        cinfo.Device = m_Device;
+        cinfo.CommandQueue = m_CommandQueue;
+        cinfo.Factory = factory;
+        cinfo.Window = info.Window;
+        m_SwapChain = new SwapChain(cinfo);
+    }
+    factory->Release();
     {
         ShaderDescriptorHeap::CreateInfo info;
         info.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
@@ -32,19 +43,14 @@ Renderer::Renderer(const CreateInfo& info)
         m_SamplerHeap = new ShaderDescriptorHeap(info);
     }
     {
-        m_CommandManager = new CommandManager(m_Device, info.NumFrames);
+        m_CommandPools.reserve(m_NumFrames);
+        for (UINT i = 0; i < m_NumFrames; ++i) {
+            CommandPool::CreateInfo info;
+            info.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+            info.Device = m_Device;
+            m_CommandPools.emplace_back(std::make_unique<CommandPool>(info));
+        }
     }
-    {
-        SwapChain::CreateInfo cinfo;
-        cinfo.NumFrames = info.NumFrames;
-        cinfo.Device = m_Device;
-        cinfo.CommandQueue = m_CommandManager->GetCommandQueue(CommandType::GRAPHICS);
-        cinfo.Factory = factory;
-        cinfo.Window = info.Window;
-        m_SwapChain = new SwapChain(cinfo);
-    }
-    factory->Release();
-
     {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -69,7 +75,7 @@ Renderer::~Renderer()
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 
-    delete m_CommandManager;
+    m_CommandPools.clear();
     delete m_CbvSrvUavHeap;
     delete m_SamplerHeap;
     delete m_SwapChain;
@@ -87,9 +93,9 @@ void Renderer::EndFrame()
 {
     const UINT frameIdx = m_FrameIdx;
 
-    m_CommandManager->ResetCommands(frameIdx);
-    ID3D12CommandAllocator* commandAllocator = m_CommandManager->NewCommandAllocator(frameIdx, CommandType::GRAPHICS);
-    ID3D12GraphicsCommandList* commandList = m_CommandManager->NewCommandList(frameIdx, CommandType::GRAPHICS, commandAllocator);
+    auto& commandPool = m_CommandPools[m_FrameIdx];
+    ID3D12CommandAllocator* commandAllocator = commandPool->NewCommandAllocator();
+    ID3D12GraphicsCommandList* commandList = commandPool->NewCommandList(commandAllocator);
 
     {
         ID3D12DescriptorHeap* dheaps[2] = {
@@ -139,8 +145,7 @@ void Renderer::EndFrame()
         commandList->Close()
     );
 
-    Workload workload = { 1, (ID3D12CommandList**)&commandList };
-    m_CommandManager->SubmitCommands(frameIdx, CommandType::GRAPHICS, 1, &workload);
+    m_CommandQueue->ExecuteCommandLists(1, (ID3D12CommandList**)&commandList);
 
     m_SwapChain->Present();
 
@@ -155,22 +160,33 @@ void Renderer::Resize()
 void Renderer::InitDevice(IDXGIAdapter* adapter)
 {
     HRESULT hr;
-    ID3D12Device4* device;
-    hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&device));
+
+    hr = D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&m_Device));
     if (FAILED(hr)) {
         MINIRDR_FAIL("Failed to create D3D12 device");
     }
 
 #if defined(_DEBUG) && 0
     ID3D12InfoQueue* infoQueue;
-    hr = device->QueryInterface(IID_PPV_ARGS(&infoQueue));
+    hr = m_Device->QueryInterface(IID_PPV_ARGS(&infoQueue));
     if (FAILED(hr)) {
         MINIRDR_FAIL("Failed to get info queue");
     }
     infoQueue->Release();
 #endif
+}
 
-    m_Device = device;
+void Renderer::InitCommandQueue()
+{
+    D3D12_COMMAND_QUEUE_DESC desc;
+    desc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+    desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+    desc.NodeMask = 0;
+
+    MINIRDR_CHKHR(
+        m_Device->CreateCommandQueue(&desc, IID_PPV_ARGS(&m_CommandQueue))
+    );
 }
 
 IDXGIFactory6* Renderer::CreateFactory()
