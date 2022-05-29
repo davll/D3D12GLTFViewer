@@ -7,8 +7,9 @@
 #include <SDL_main.h>
 #include <imgui_impl_sdl.h>
 #include <memory>
+#include "font.h"
 
-static HWND SDL_GetHWND(SDL_Window* window);
+static void SetupImGUIStyle();
 
 int main(int argc, char* argv[])
 {
@@ -45,6 +46,8 @@ int main(int argc, char* argv[])
             window.get(),
         });
 
+        SetupImGUIStyle();
+
         bool show_demo_window = true;
 
         for (bool running = true; running; ) {
@@ -79,4 +82,39 @@ int main(int argc, char* argv[])
     SPDLOG_INFO("Quitting");
     SDL_Quit();
     return 0;
+}
+
+static void AddChicagoFont(int size_in_pixels)
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImFontConfig font_cfg = {};
+    sprintf_s(font_cfg.Name, "Chicago, %dpx", size_in_pixels);
+    size_t font_size = chicago_size();
+    void* font_data = malloc(font_size);
+    memcpy(font_data, chicago_data(), font_size);
+    io.Fonts->AddFontFromMemoryTTF(font_data, (int)font_size, size_in_pixels, &font_cfg);
+}
+
+static void AddIBMPlexMonoFont(int size_in_pixels)
+{
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImFontConfig font_cfg = {};
+    sprintf_s(font_cfg.Name, "IBMPlex-Mono, %dpx", size_in_pixels);
+    size_t font_size = ibmplexmono_size();
+    void* font_data = malloc(font_size);
+    memcpy(font_data, ibmplexmono_data(), font_size);
+    io.Fonts->AddFontFromMemoryTTF(font_data, (int)font_size, size_in_pixels, &font_cfg);
+}
+
+static void SetupImGUIStyle()
+{
+    AddIBMPlexMonoFont(24);
+    AddChicagoFont(24);
+
+    ImGuiStyle& style = ImGui::GetStyle();
+
+    //style.ScaleAllSizes(2.0f);
+    // SetupImGuiStyle2();
 }
