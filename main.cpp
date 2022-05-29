@@ -5,7 +5,7 @@
 #include <spdlog/sinks/msvc_sink.h>
 #include <SDL.h>
 #include <SDL_main.h>
-#include <imgui_impl_sdl.h>
+#include <SDL_syswm.h>
 #include <memory>
 #include "font.h"
 
@@ -41,6 +41,13 @@ int main(int argc, char* argv[])
         }
         std::unique_ptr<SDL_Window, decltype(&SDL_DestroyWindow)> window(_window, &SDL_DestroyWindow);
 
+        SDL_SysWMinfo wminfo;
+        SDL_VERSION(&wminfo.version);
+        if (SDL_GetWindowWMInfo(window.get(), &wminfo) == 0) {
+            MRDR_FAIL("Unable to get SDL_WMInfo");
+        }
+        HWND hwnd = wminfo.info.win.window;
+
         mrdr::Renderer renderer(mrdr::Renderer::CreateInfo {
             3,
             window.get(),
@@ -48,22 +55,17 @@ int main(int argc, char* argv[])
 
         SetupImGUIStyle();
 
-        bool show_demo_window = true;
+        bool show_app_metrics = false;
+        bool show_app_stack_tool = false;
+        bool show_app_style_editor = false;
 
         for (bool running = true; running; ) {
             SDL_Event event;
             while (SDL_PollEvent(&event)) {
-                ImGui_ImplSDL2_ProcessEvent(&event);
+                renderer.ProcessEvent(&event);
                 switch (event.type) {
                 case SDL_QUIT:
                     running = false;
-                    break;
-                case SDL_WINDOWEVENT:
-                    switch (event.window.event) {
-                    case SDL_WINDOWEVENT_RESIZED:
-                        renderer.Resize();
-                        break;
-                    }
                     break;
                 default:
                     break;
@@ -72,8 +74,46 @@ int main(int argc, char* argv[])
 
             renderer.StartFrame();
 
-            if (show_demo_window)
-                ImGui::ShowDemoWindow(&show_demo_window);
+            if (show_app_metrics)
+                ImGui::ShowMetricsWindow(&show_app_metrics);
+            if (show_app_stack_tool)
+                ImGui::ShowStackToolWindow();
+            if (show_app_style_editor) {
+                ImGui::Begin("Dear ImGui Style Editor", &show_app_style_editor);
+                ImGui::ShowStyleEditor();
+                ImGui::End();
+            }
+
+            if (ImGui::BeginMainMenuBar()) {
+                if (ImGui::BeginMenu("File")) {
+                    if (ImGui::MenuItem("Open", "Ctrl+O")) {
+                        std::vector<wchar_t> filePath(1024, 0);
+                        OPENFILENAMEW data = {};
+                        data.lStructSize = sizeof(OPENFILENAMEW);
+                        data.hwndOwner = hwnd;
+                        data.lpstrFilter = L"GLTF Files (*.gltf, *.glb)\0*.gltf;*.glb\0All Files (*.*)\0*.*\0\0";
+                        data.lpstrFile = filePath.data();
+                        data.nMaxFile = filePath.size();
+                        data.lpstrTitle = L"Open File";
+                        data.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
+                        if (GetOpenFileNameW(&data)) {
+                            wprintf_s(L"%s\n", filePath.data());
+                        }
+                    }
+                    ImGui::Separator();
+                    if (ImGui::MenuItem("Quit", "Ctrl+Q")) {
+                        running = false;
+                    }
+                    ImGui::EndMenu();
+                }
+                if (ImGui::BeginMenu("Tools")) {
+                    ImGui::MenuItem("Metrics/Debugger", NULL, &show_app_metrics);
+                    ImGui::MenuItem("Stack Tool", NULL, &show_app_stack_tool);
+                    ImGui::MenuItem("Style Editor", NULL, &show_app_style_editor);
+                    ImGui::EndMenu();
+                }
+                ImGui::EndMainMenuBar();
+            }
 
             renderer.EndFrame();
         }

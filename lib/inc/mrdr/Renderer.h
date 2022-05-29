@@ -33,7 +33,7 @@ public:
 
     void EndFrame();
 
-    void Resize();
+    void ProcessEvent(const SDL_Event* event);
 
 private:
     static IDXGIFactory6* CreateFactory();

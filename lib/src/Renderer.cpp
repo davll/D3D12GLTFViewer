@@ -155,11 +155,6 @@ void Renderer::EndFrame()
     m_FrameIdx = (m_FrameIdx + 1) % m_NumFrames;
 }
 
-void Renderer::Resize()
-{
-    m_SwapChain->Resize();
-}
-
 void Renderer::InitDevice(IDXGIAdapter* adapter)
 {
     HRESULT hr;
@@ -241,6 +236,22 @@ IDXGIAdapter4* Renderer::ChooseAdapter(IDXGIFactory6* factory)
         }
     }
     return adapter;
+}
+
+void Renderer::ProcessEvent(const SDL_Event* event)
+{
+    ImGui_ImplSDL2_ProcessEvent(event);
+    switch (event->type) {
+    case SDL_WINDOWEVENT:
+        switch (event->window.event) {
+        case SDL_WINDOWEVENT_RESIZED:
+            m_SwapChain->Resize();
+            break;
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 }

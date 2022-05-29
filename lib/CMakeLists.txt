@@ -4,8 +4,6 @@ add_library(mrdr STATIC
     inc/mrdr/common.h
     inc/mrdr/Renderer.h
     src/Renderer.cpp
-    src/Renderer/CommandManager.h
-    src/Renderer/CommandManager.cpp
     src/Renderer/CommandPool.h
     src/Renderer/CommandPool.cpp
     src/Renderer/CommandQueue.h
