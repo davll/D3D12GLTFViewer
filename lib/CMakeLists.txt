@@ -23,7 +23,7 @@ target_include_directories(mrdr
 
 target_link_libraries(mrdr
     PUBLIC
-    spdlog::spdlog
+    spdlog
     SDL2::SDL2
     imgui imgui-sdl2 imgui-dx12
     tinygltf json stb

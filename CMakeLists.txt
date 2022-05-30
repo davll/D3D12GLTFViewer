@@ -1,8 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 project(D3D12GLTFViewer)
 
+find_package(Threads REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
-find_package(spdlog CONFIG REQUIRED)
+
+include(CheckSymbolExists)
 
 add_subdirectory(extern)
 add_subdirectory(lib)
