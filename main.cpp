@@ -56,7 +56,6 @@ int main(int argc, char* argv[])
         SetupImGUIStyle();
 
         bool show_app_metrics = false;
-        bool show_app_stack_tool = false;
         bool show_app_style_editor = false;
 
         for (bool running = true; running; ) {
@@ -76,8 +75,6 @@ int main(int argc, char* argv[])
 
             if (show_app_metrics)
                 ImGui::ShowMetricsWindow(&show_app_metrics);
-            if (show_app_stack_tool)
-                ImGui::ShowStackToolWindow();
             if (show_app_style_editor) {
                 ImGui::Begin("Dear ImGui Style Editor", &show_app_style_editor);
                 ImGui::ShowStyleEditor();
@@ -108,7 +105,6 @@ int main(int argc, char* argv[])
                 }
                 if (ImGui::BeginMenu("Tools")) {
                     ImGui::MenuItem("Metrics/Debugger", NULL, &show_app_metrics);
-                    ImGui::MenuItem("Stack Tool", NULL, &show_app_stack_tool);
                     ImGui::MenuItem("Style Editor", NULL, &show_app_style_editor);
                     ImGui::EndMenu();
                 }
