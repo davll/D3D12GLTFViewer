@@ -35,12 +35,14 @@ void CommandPool::Reset()
 
 ID3D12CommandAllocator* CommandPool::NewCommandAllocator()
 {
+    D3D12_COMMAND_LIST_TYPE type = (D3D12_COMMAND_LIST_TYPE)(UINT)m_Type;
+
     ID3D12CommandAllocator* commandAllocator;
     if (m_CommandAllocators.size() > m_NumUsedCommandAllocators) {
         commandAllocator = m_CommandAllocators[m_NumUsedCommandAllocators++];
     } else {
         MRDR_CHKHR(
-            m_Device->CreateCommandAllocator(m_Type, IID_PPV_ARGS(&commandAllocator))
+            m_Device->CreateCommandAllocator(type, IID_PPV_ARGS(&commandAllocator))
         );
         m_CommandAllocators.push_back(commandAllocator);
     }
@@ -49,6 +51,8 @@ ID3D12CommandAllocator* CommandPool::NewCommandAllocator()
 
 ID3D12GraphicsCommandList* CommandPool::NewCommandList(ID3D12CommandAllocator* commandAllocator)
 {
+    D3D12_COMMAND_LIST_TYPE type = (D3D12_COMMAND_LIST_TYPE)(UINT)m_Type;
+
     ID3D12GraphicsCommandList* commandList;
     if (m_CommandLists.size() > m_NumUsedCommandLists) {
         commandList = m_CommandLists[m_NumUsedCommandLists++];
@@ -57,7 +61,7 @@ ID3D12GraphicsCommandList* CommandPool::NewCommandList(ID3D12CommandAllocator* c
         );
     } else {
         MRDR_CHKHR(
-            m_Device->CreateCommandList(0, m_Type, commandAllocator, NULL, IID_PPV_ARGS(&commandList))
+            m_Device->CreateCommandList(0, type, commandAllocator, NULL, IID_PPV_ARGS(&commandList))
         );
         m_CommandLists.push_back(commandList);
     }

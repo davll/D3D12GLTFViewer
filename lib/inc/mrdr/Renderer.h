@@ -7,6 +7,7 @@ namespace mrdr {
 class CommandPool;
 class CommandQueue;
 class ShaderDescriptorHeap;
+struct StaticDescriptors;
 class SwapChain;
 
 class Renderer {
@@ -40,20 +41,20 @@ private:
     static IDXGIAdapter4* ChooseAdapter(IDXGIFactory6* factory);
     void InitDevice(IDXGIAdapter* adapter);
     void InitCommandQueue();
+    void InitDescriptors();
+    void InitCommandPools();
+    void InitImGui(SDL_Window* window);
 
 private:
-    enum class StaticCbvSrvUav : UINT {
-        IMGUI_FONT_SRV = 0,
-    };
-
     const UINT m_NumFrames;
     UINT m_FrameIdx;
     ID3D12Device* m_Device;
     CommandQueue* m_CommandQueue;
-    std::vector<std::unique_ptr<CommandPool>> m_CommandPools;
-    ShaderDescriptorHeap* m_CbvSrvUavHeap;
-    ShaderDescriptorHeap* m_SamplerHeap;
     SwapChain* m_SwapChain;
+    ShaderDescriptorHeap* m_ResourceDescriptorHeap;
+    ShaderDescriptorHeap* m_SamplerDescriptorHeap;
+    StaticDescriptors* m_StaticDescriptors;
+    std::vector<std::unique_ptr<CommandPool>> m_CommandPools;
 };
 
 } // namespace mrdr

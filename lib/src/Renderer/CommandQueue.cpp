@@ -6,7 +6,7 @@ CommandQueue::CommandQueue(const CreateInfo& info)
 : m_WorkCount(0)
 {
     D3D12_COMMAND_QUEUE_DESC desc;
-    desc.Type = info.Type;
+    desc.Type = (D3D12_COMMAND_LIST_TYPE)(UINT)info.Type;
     desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
     desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
     desc.NodeMask = 0;

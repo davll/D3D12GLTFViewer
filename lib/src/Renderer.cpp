@@ -2,6 +2,7 @@
 #include "Renderer/CommandPool.h"
 #include "Renderer/CommandQueue.h"
 #include "Renderer/ShaderDescriptorHeap.h"
+#include "Renderer/StaticDescriptors.h"
 #include "Renderer/SwapChain.h"
 #include "imgui_impl_sdl.h"
 #include "imgui_impl_dx12.h"
@@ -27,58 +28,26 @@ Renderer::Renderer(const CreateInfo& info)
         m_SwapChain = new SwapChain(cinfo);
     }
     factory->Release();
-    {
-        ShaderDescriptorHeap::CreateInfo info;
-        info.Type = D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV;
-        info.Device = m_Device;
-        info.MaxNumStaticDescriptors = 16;
-        info.MaxNumDynamicDescriptors = 4096;
-        m_CbvSrvUavHeap = new ShaderDescriptorHeap(info);
-    }
-    {
-        ShaderDescriptorHeap::CreateInfo info;
-        info.Type = D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER;
-        info.Device = m_Device;
-        info.MaxNumStaticDescriptors = 4;
-        info.MaxNumDynamicDescriptors = 512;
-        m_SamplerHeap = new ShaderDescriptorHeap(info);
-    }
-    {
-        m_CommandPools.reserve(m_NumFrames);
-        for (UINT i = 0; i < m_NumFrames; ++i) {
-            CommandPool::CreateInfo info;
-            info.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-            info.Device = m_Device;
-            m_CommandPools.emplace_back(std::make_unique<CommandPool>(info));
-        }
-    }
-    {
-        IMGUI_CHECKVERSION();
-        ImGui::CreateContext();
-        ImGuiIO& io = ImGui::GetIO(); (void)io;
-        ImGui::StyleColorsDark();
-        ImGui_ImplSDL2_InitForD3D(info.Window);
-        ImGui_ImplDX12_Init(
-            m_Device,
-            info.NumFrames,
-            DXGI_FORMAT_R8G8B8A8_UNORM,
-            m_CbvSrvUavHeap->GetDescriptorHeap(),
-            m_CbvSrvUavHeap->GetStaticDescriptorCpuHandle((UINT)StaticCbvSrvUav::IMGUI_FONT_SRV),
-            m_CbvSrvUavHeap->GetStaticDescriptorGpuHandle((UINT)StaticCbvSrvUav::IMGUI_FONT_SRV));
-    }
+    InitDescriptors();
+    InitCommandPools();
+    InitImGui(info.Window);
 }
 
 Renderer::~Renderer()
 {
+    // Wait for GPU
     m_SwapChain->WaitAll();
 
+    // ImGui
     ImGui_ImplDX12_Shutdown();
     ImGui_ImplSDL2_Shutdown();
     ImGui::DestroyContext();
 
+    // Cleanup
     m_CommandPools.clear();
-    delete m_CbvSrvUavHeap;
-    delete m_SamplerHeap;
+    delete m_StaticDescriptors;
+    delete m_ResourceDescriptorHeap;
+    delete m_SamplerDescriptorHeap;
     delete m_SwapChain;
     delete m_CommandQueue;
     m_Device->Release();
@@ -86,6 +55,7 @@ Renderer::~Renderer()
 
 void Renderer::StartFrame()
 {
+    // ImGui
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
@@ -102,8 +72,8 @@ void Renderer::EndFrame()
 
     {
         ID3D12DescriptorHeap* dheaps[2] = {
-            m_CbvSrvUavHeap->GetDescriptorHeap(),
-            m_SamplerHeap->GetDescriptorHeap(),
+            m_ResourceDescriptorHeap->GetDescriptorHeap(),
+            m_SamplerDescriptorHeap->GetDescriptorHeap(),
         };
         commandList->SetDescriptorHeaps(2, dheaps);
     }
@@ -177,10 +147,70 @@ void Renderer::InitDevice(IDXGIAdapter* adapter)
 void Renderer::InitCommandQueue()
 {
     CommandQueue::CreateInfo info;
-    info.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+    info.Type = CommandQueue::Type::GRAPHICS;
     info.Device = m_Device;
 
     m_CommandQueue = new CommandQueue(info);
+}
+
+void Renderer::InitDescriptors()
+{
+    ShaderDescriptorHeap::CreateInfo info;
+    info.Device = m_Device;
+
+    info.Type = ShaderDescriptorHeap::Type::RESOURCE;
+    info.MaxNumStaticDescriptors = (UINT)StaticResourceDescriptorIds::_COUNT;
+    info.MaxNumDynamicDescriptors = 4096;
+    m_ResourceDescriptorHeap = new ShaderDescriptorHeap(info);
+
+    info.Type = ShaderDescriptorHeap::Type::SAMPLER;
+    info.MaxNumStaticDescriptors = (UINT)StaticSamplerDescriptorIds::_COUNT;
+    info.MaxNumDynamicDescriptors = 512;
+    m_SamplerDescriptorHeap = new ShaderDescriptorHeap(info);
+
+    m_StaticDescriptors = new StaticDescriptors();
+    if (m_ResourceDescriptorHeap->GetMaxNumStaticDescriptors() > 0) {
+        UINT size = m_ResourceDescriptorHeap->GetDescriptorSize();
+        ShaderDescriptorHandle handle = m_ResourceDescriptorHeap->GetBaseStaticDescriptorHandle();
+        for (UINT i = 0; i < (UINT)StaticResourceDescriptorIds::_COUNT; ++i, handle = handle + size) {
+            m_StaticDescriptors->Resources.Handles[i] = handle;
+        }
+    }
+    if (m_SamplerDescriptorHeap->GetMaxNumStaticDescriptors() > 0) {
+        UINT size = m_SamplerDescriptorHeap->GetDescriptorSize();
+        ShaderDescriptorHandle handle = m_SamplerDescriptorHeap->GetBaseStaticDescriptorHandle();
+        for (UINT i = 0; i < (UINT)StaticSamplerDescriptorIds::_COUNT; ++i, handle = handle + size) {
+            m_StaticDescriptors->Samplers.Handles[i] = handle;
+        }
+    }
+}
+
+void Renderer::InitCommandPools()
+{
+    m_CommandPools.reserve(m_NumFrames);
+    for (UINT i = 0; i < m_NumFrames; ++i) {
+        CommandPool::CreateInfo info;
+        info.Type = CommandPool::Type::GRAPHICS;
+        info.Device = m_Device;
+        m_CommandPools.emplace_back(std::make_unique<CommandPool>(info));
+    }
+}
+
+void Renderer::InitImGui(SDL_Window* window)
+{
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+    ImGui::StyleColorsDark();
+    ImGui_ImplSDL2_InitForD3D(window);
+    ImGui_ImplDX12_Init(
+        m_Device,
+        m_NumFrames,
+        DXGI_FORMAT_R8G8B8A8_UNORM,
+        m_ResourceDescriptorHeap->GetDescriptorHeap(),
+        m_StaticDescriptors->Resources.ImGuiFontSRV.Cpu,
+        m_StaticDescriptors->Resources.ImGuiFontSRV.Gpu
+    );
 }
 
 IDXGIFactory6* Renderer::CreateFactory()

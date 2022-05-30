@@ -6,8 +6,14 @@ namespace mrdr {
 
 class CommandQueue {
 public:
+    enum class Type : UINT {
+        GRAPHICS = D3D12_COMMAND_LIST_TYPE_DIRECT,
+        COMPUTE = D3D12_COMMAND_LIST_TYPE_COMPUTE,
+        TRANSFER = D3D12_COMMAND_LIST_TYPE_COPY,
+    };
+
     struct CreateInfo {
-        D3D12_COMMAND_LIST_TYPE Type;
+        Type Type;
         ID3D12Device* Device;
     };
 

@@ -22,7 +22,7 @@ ShaderDescriptorHeap::~ShaderDescriptorHeap()
 void ShaderDescriptorHeap::InitDescriptorHeaps()
 {
     D3D12_DESCRIPTOR_HEAP_DESC desc;
-    desc.Type = m_Type;
+    desc.Type = (D3D12_DESCRIPTOR_HEAP_TYPE)(UINT)m_Type;
     desc.NumDescriptors = m_MaxNumStaticDescriptors + m_MaxNumDynamicDescriptors;
     desc.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE;
     desc.NodeMask = 0;
@@ -31,14 +31,12 @@ void ShaderDescriptorHeap::InitDescriptorHeaps()
         m_Device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&m_DescriptorHeap))
     );
 
-    m_StaticCpuHandle = m_DescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-    m_StaticGpuHandle = m_DescriptorHeap->GetGPUDescriptorHandleForHeapStart();
+    m_BaseStaticDescriptorHandle = {
+        m_DescriptorHeap->GetCPUDescriptorHandleForHeapStart(),
+        m_DescriptorHeap->GetGPUDescriptorHandleForHeapStart()
+    };
 
-    m_DynamicCpuHandle = m_StaticCpuHandle;
-    m_DynamicCpuHandle.ptr += m_DescriptorSize * m_MaxNumStaticDescriptors;
-
-    m_DynamicGpuHandle = m_StaticGpuHandle;
-    m_DynamicGpuHandle.ptr += m_DescriptorSize * m_MaxNumStaticDescriptors;
+    m_BaseDynamicDescriptorHandle = m_BaseStaticDescriptorHandle + m_DescriptorSize * m_MaxNumStaticDescriptors;
 }
 
 }

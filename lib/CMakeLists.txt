@@ -10,6 +10,7 @@ add_library(mrdr STATIC
     src/Renderer/CommandQueue.cpp
     src/Renderer/ShaderDescriptorHeap.h
     src/Renderer/ShaderDescriptorHeap.cpp
+    src/Renderer/StaticDescriptors.h
     src/Renderer/SwapChain.h
     src/Renderer/SwapChain.cpp
     src/tinygltf.cpp

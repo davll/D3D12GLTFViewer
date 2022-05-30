@@ -31,19 +31,24 @@ struct Size {
     UINT Height;
 };
 
-struct Workload {
-    UINT NumCommandLists;
-    ID3D12CommandList** CommandLists;
+struct ObjectDescriptorHandle {
+    D3D12_CPU_DESCRIPTOR_HANDLE Cpu;
 };
 
-enum class CommandType : UINT {
-    GRAPHICS,
-    COMPUTE,
-    TRANSFER,
-    _COUNT,
+inline ObjectDescriptorHandle operator+(const ObjectDescriptorHandle& a, UINT b)
+{
+    return { { a.Cpu.ptr + b } };
+}
+
+struct ShaderDescriptorHandle {
+    D3D12_CPU_DESCRIPTOR_HANDLE Cpu;
+    D3D12_GPU_DESCRIPTOR_HANDLE Gpu;
 };
 
-typedef UINT64 WorkId;
+inline ShaderDescriptorHandle operator+(const ShaderDescriptorHandle& a, UINT b)
+{
+    return { { a.Cpu.ptr + b }, { a.Gpu.ptr + b } };
+}
 
 #if defined(_DEBUG)
 inline void debug_break()

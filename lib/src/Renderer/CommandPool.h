@@ -1,15 +1,20 @@
 #pragma once
 
 #include "common.h"
-#include <d3d12.h>
-#include <vector>
 
 namespace mrdr {
 
 class CommandPool {
 public:
+    enum class Type : UINT {
+        GRAPHICS = D3D12_COMMAND_LIST_TYPE_DIRECT,
+        COMPUTE = D3D12_COMMAND_LIST_TYPE_COMPUTE,
+        TRANSFER = D3D12_COMMAND_LIST_TYPE_COPY,
+        BUNDLE = D3D12_COMMAND_LIST_TYPE_BUNDLE,
+    };
+
     struct CreateInfo {
-        D3D12_COMMAND_LIST_TYPE Type;
+        Type Type;
         ID3D12Device* Device;
     };
 
@@ -22,7 +27,7 @@ public:
     ID3D12GraphicsCommandList* NewCommandList(ID3D12CommandAllocator* commandAllocator);
 
 private:
-    const D3D12_COMMAND_LIST_TYPE m_Type;
+    const Type m_Type;
     ID3D12Device* m_Device;
     std::vector<ID3D12CommandAllocator*> m_CommandAllocators;
     std::vector<ID3D12GraphicsCommandList*> m_CommandLists;
