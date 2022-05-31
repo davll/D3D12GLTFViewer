@@ -7,9 +7,8 @@
 #include <SDL_main.h>
 #include <SDL_syswm.h>
 #include <memory>
-#include "font.h"
-
-static void SetupImGUIStyle();
+#include "guifont.h"
+#include "guistyle.h"
 
 int main(int argc, char* argv[])
 {
@@ -53,10 +52,15 @@ int main(int argc, char* argv[])
             window.get(),
         });
 
-        SetupImGUIStyle();
+        guifont_add_ibmplexmono_font(24);
+        guifont_add_chicago_font(24);
 
         bool show_app_metrics = false;
         bool show_app_style_editor = false;
+        bool show_demo_window = false;
+        GuiStyle huestyle;
+        guistyle_init(huestyle);
+        guistyle_apply(huestyle);
 
         for (bool running = true; running; ) {
             SDL_Event event;
@@ -75,11 +79,10 @@ int main(int argc, char* argv[])
 
             if (show_app_metrics)
                 ImGui::ShowMetricsWindow(&show_app_metrics);
-            if (show_app_style_editor) {
-                ImGui::Begin("Dear ImGui Style Editor", &show_app_style_editor);
-                ImGui::ShowStyleEditor();
-                ImGui::End();
-            }
+            if (show_app_style_editor)
+                guistyle_edit(huestyle, &show_app_style_editor);
+            if (show_demo_window)
+                ImGui::ShowDemoWindow(&show_demo_window);
 
             if (ImGui::BeginMainMenuBar()) {
                 if (ImGui::BeginMenu("File")) {
@@ -106,6 +109,7 @@ int main(int argc, char* argv[])
                 if (ImGui::BeginMenu("Tools")) {
                     ImGui::MenuItem("Metrics/Debugger", NULL, &show_app_metrics);
                     ImGui::MenuItem("Style Editor", NULL, &show_app_style_editor);
+                    ImGui::MenuItem("Demo Window", NULL, &show_demo_window);
                     ImGui::EndMenu();
                 }
                 ImGui::EndMainMenuBar();
@@ -118,39 +122,4 @@ int main(int argc, char* argv[])
     SPDLOG_INFO("Quitting");
     SDL_Quit();
     return 0;
-}
-
-static void AddChicagoFont(int size_in_pixels)
-{
-    ImGuiIO& io = ImGui::GetIO();
-
-    ImFontConfig font_cfg = {};
-    sprintf_s(font_cfg.Name, "Chicago, %dpx", size_in_pixels);
-    size_t font_size = chicago_size();
-    void* font_data = malloc(font_size);
-    memcpy(font_data, chicago_data(), font_size);
-    io.Fonts->AddFontFromMemoryTTF(font_data, (int)font_size, size_in_pixels, &font_cfg);
-}
-
-static void AddIBMPlexMonoFont(int size_in_pixels)
-{
-    ImGuiIO& io = ImGui::GetIO();
-
-    ImFontConfig font_cfg = {};
-    sprintf_s(font_cfg.Name, "IBMPlex-Mono, %dpx", size_in_pixels);
-    size_t font_size = ibmplexmono_size();
-    void* font_data = malloc(font_size);
-    memcpy(font_data, ibmplexmono_data(), font_size);
-    io.Fonts->AddFontFromMemoryTTF(font_data, (int)font_size, size_in_pixels, &font_cfg);
-}
-
-static void SetupImGUIStyle()
-{
-    AddIBMPlexMonoFont(24);
-    AddChicagoFont(24);
-
-    ImGuiStyle& style = ImGui::GetStyle();
-
-    //style.ScaleAllSizes(2.0f);
-    // SetupImGuiStyle2();
 }

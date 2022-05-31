@@ -3910,12 +3910,12 @@ static const uint8_t data[] = {
     0x00, 0x04, 0x00, 0x04, 0x00, 0x07, 0x2B, 0x00,  // 7A17
 };
 
-const void* chicago_data()
+const void* guifont_chicago_data()
 {
     return data;
 }
 
-size_t chicago_size()
+size_t guifont_chicago_size()
 {
     return sizeof(data);
 }

@@ -13725,13 +13725,12 @@ static uint8_t data[] = {
     0x86, 0x00, 0x00, 0x00,
 };
 
-const void* ibmplexmono_data()
+const void* guifont_ibmplexmono_data()
 {
     return data;
 }
 
-size_t ibmplexmono_size()
+size_t guifont_ibmplexmono_size()
 {
     return sizeof(data);
 }
-

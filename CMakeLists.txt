@@ -11,9 +11,12 @@ add_subdirectory(lib)
 
 add_executable(D3D12GLTFViewer
     main.cpp
-    font.h
-    font_chicago.cpp
-    font_ibmplexmono.cpp
+    guifont.h
+    guifont.cpp
+    guifont_chicago.cpp
+    guifont_ibmplexmono.cpp
+    guistyle.h
+    guistyle.cpp
 )
 
 target_link_libraries(D3D12GLTFViewer PRIVATE
