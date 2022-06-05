@@ -2,6 +2,7 @@
 #include "command_queue.h"
 
 namespace mrdr {
+namespace dx12 {
 
 CommandFence::CommandFence(const CreateInfo& info)
 : m_NumWorks(0)
@@ -73,4 +74,5 @@ BOOL CommandFence::SetWaitEvent(HANDLE event, UINT64 workId)
     }
 }
 
+}
 }

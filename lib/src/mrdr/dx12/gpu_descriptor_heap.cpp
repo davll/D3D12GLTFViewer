@@ -1,6 +1,7 @@
 #include "gpu_descriptor_heap.h"
 
 namespace mrdr {
+namespace dx12 {
 
 GpuDescriptorHeap::GpuDescriptorHeap(const CreateInfo& info)
 : m_Type(info.Type)
@@ -27,4 +28,5 @@ GpuDescriptorHeap::~GpuDescriptorHeap()
     m_DescriptorHeap->Release();
 }
 
+}
 }

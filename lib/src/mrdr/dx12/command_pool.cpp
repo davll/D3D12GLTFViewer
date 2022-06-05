@@ -1,6 +1,7 @@
 #include "command_pool.h"
 
 namespace mrdr {
+namespace dx12 {
 
 CommandPool::CommandPool(const CreateInfo& info)
 : m_Type(info.Type)
@@ -118,4 +119,5 @@ gsl::span<ID3D12CommandAllocator*> CommandPool::GetCommandAllocators(UINT bankId
     return gsl::make_span(base, m_NumThreads);
 }
 
+}
 }

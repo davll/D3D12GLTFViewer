@@ -3,6 +3,7 @@
 #include "common.h"
 
 namespace mrdr {
+namespace dx12 {
 
 class CommandQueue;
 
@@ -43,4 +44,5 @@ inline UINT64 CommandFence::GetNumCompleteWorks() const
     return m_Fence->GetCompletedValue();
 }
 
+}
 }

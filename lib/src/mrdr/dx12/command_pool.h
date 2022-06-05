@@ -3,6 +3,7 @@
 #include "common.h"
 
 namespace mrdr {
+namespace dx12 {
 
 class CommandPool {
 public:
@@ -44,4 +45,5 @@ private:
     std::vector<ID3D12GraphicsCommandList*> m_CommandLists;
 };
 
+}
 }

@@ -1,6 +1,7 @@
 #include "device.h"
 
 namespace mrdr {
+namespace dx12 {
 
 Device::Device(const CreateInfo& info)
 : m_NumBanks(info.NumBanks)
@@ -59,4 +60,5 @@ void Device::EndFrame()
     m_BankIdx = (m_BankIdx + 1) % m_NumBanks;
 }
 
+}
 }

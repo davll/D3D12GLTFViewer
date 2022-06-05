@@ -7,6 +7,7 @@
 struct SDL_Window;
 
 namespace mrdr {
+namespace dx12 {
 
 class SwapChain {
 public:
@@ -70,4 +71,5 @@ inline D3D12_CPU_DESCRIPTOR_HANDLE SwapChain::GetRenderTargetView() const
     return handle;
 }
 
+}
 }

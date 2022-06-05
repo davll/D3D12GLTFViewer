@@ -11,7 +11,7 @@ Context::Context()
 : m_ShouldQuit(false)
 {
     InitWindow();
-    m_Renderer = new Renderer(m_Window);
+    m_Renderer = new dx12::Renderer(m_Window);
 }
 
 Context::~Context()

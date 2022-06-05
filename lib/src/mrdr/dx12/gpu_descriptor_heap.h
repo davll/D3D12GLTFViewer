@@ -4,6 +4,7 @@
 #include "descriptor_span.h"
 
 namespace mrdr {
+namespace dx12 {
 
 class CommandFence;
 
@@ -72,4 +73,5 @@ inline GpuDescriptorSpan GpuDescriptorHeap::GetDynamicGpuSpan() const
     return { m_GpuBase, m_NumDynamic, m_Size };
 }
 
+}
 }

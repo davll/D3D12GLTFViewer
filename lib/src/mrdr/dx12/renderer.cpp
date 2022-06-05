@@ -4,6 +4,7 @@
 #include <imgui_impl_sdl.h>
 
 namespace mrdr {
+namespace dx12 {
 
 Renderer::Renderer(SDL_Window* window)
 : m_Window(window)
@@ -180,4 +181,5 @@ IDXGIAdapter4* Renderer::ChooseAdapter(IDXGIFactory6* factory)
     return adapter;
 }
 
+}
 }

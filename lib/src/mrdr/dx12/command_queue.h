@@ -3,6 +3,7 @@
 #include "common.h"
 
 namespace mrdr {
+namespace dx12 {
 
 class CommandFence;
 
@@ -37,4 +38,5 @@ inline ID3D12CommandQueue* CommandQueue::GetCommandQueue() const
     return m_CommandQueue;
 }
 
+}
 }

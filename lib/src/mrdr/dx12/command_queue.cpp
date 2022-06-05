@@ -2,6 +2,7 @@
 #include "command_fence.h"
 
 namespace mrdr {
+namespace dx12 {
 
 CommandQueue::CommandQueue(const CreateInfo& info)
 {
@@ -36,4 +37,5 @@ UINT64 CommandQueue::SubmitSignal(CommandFence* fence)
     return fence->GpuSignal(m_CommandQueue);
 }
 
+}
 }

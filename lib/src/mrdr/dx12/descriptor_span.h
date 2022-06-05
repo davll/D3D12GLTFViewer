@@ -3,6 +3,7 @@
 #include "common.h"
 
 namespace mrdr {
+namespace dx12 {
 
 struct DescriptorIndexRange {
     UINT Base;
@@ -51,4 +52,5 @@ struct GpuDescriptorSpan {
     }
 };
 
+}
 }

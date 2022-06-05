@@ -8,6 +8,7 @@
 struct SDL_Window;
 
 namespace mrdr {
+namespace dx12 {
 
 class Renderer {
 public:
@@ -37,4 +38,5 @@ private:
     ID3D12GraphicsCommandList* m_CommandList;
 };
 
+}
 }

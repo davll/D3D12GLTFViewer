@@ -6,6 +6,7 @@
 #include "command_queue.h"
 
 namespace mrdr {
+namespace dx12 {
 
 class Device {
 public:
@@ -43,4 +44,5 @@ inline CommandQueue* Device::GetCommandQueue() const
     return m_CommandQueue;
 }
 
+}
 }

@@ -5,8 +5,7 @@
 #include <SDL.h>
 
 namespace mrdr {
-
-class Renderer;
+namespace dx12 { class Renderer; }
 
 class Context : public IContext {
 public:
@@ -32,7 +31,7 @@ private:
 private:
     std::atomic_bool m_ShouldQuit;
     SDL_Window* m_Window;
-    Renderer* m_Renderer;
+    dx12::Renderer* m_Renderer;
 };
 
 }

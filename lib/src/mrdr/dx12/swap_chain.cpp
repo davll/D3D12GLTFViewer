@@ -3,6 +3,7 @@
 #include <SDL_syswm.h>
 
 namespace mrdr {
+namespace dx12 {
 
 SwapChain::SwapChain(const CreateInfo& info)
 : m_NumFrames(info.NumFrames)
@@ -165,4 +166,5 @@ void SwapChain::ClearBuffers()
     }
 }
 
+}
 }
