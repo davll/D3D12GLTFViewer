@@ -1,12 +1,19 @@
-#include "renderer.h"
+#include "context.h"
+#include "device.h"
+#include "gpu_descriptor_heap.h"
+#include "swap_chain.h"
+#include <assert.h>
+#include <stdlib.h>
+#include <spdlog/spdlog.h>
+#include <SDL.h>
 #include <imgui.h>
-#include <imgui_impl_dx12.h>
 #include <imgui_impl_sdl.h>
+#include <imgui_impl_dx12.h>
 
 namespace mrdr {
 namespace dx12 {
 
-Renderer::Renderer(SDL_Window* window)
+Context::Context(SDL_Window* window)
 : m_Window(window)
 {
     IDXGIFactory6* factory = CreateFactory();
@@ -52,7 +59,7 @@ Renderer::Renderer(SDL_Window* window)
     }
 }
 
-Renderer::~Renderer()
+Context::~Context()
 {
     m_SwapChain->WaitAll();
 
@@ -66,7 +73,75 @@ Renderer::~Renderer()
     delete m_Device;
 }
 
-void Renderer::BeginFrame()
+//
+// IContext Implementation
+//
+
+ICamera* Context::CreateCamera()
+{
+    return NULL;
+}
+
+void Context::DestroyCamera(ICamera* camera)
+{
+}
+
+IScene* Context::CreateScene()
+{
+    return NULL;
+}
+
+void Context::DestroyScene(IScene* scene)
+{
+}
+
+//
+// Internal Implementation
+//
+
+bool Context::ProcessEvent(const SDL_Event& event)
+{
+    if (event.type == SDL_QUIT)
+        return false;
+
+    auto& io = ImGui::GetIO();
+    ImGui_ImplSDL2_ProcessEvent(&event);
+    if (io.WantCaptureKeyboard) {
+        switch (event.type) {
+        case SDL_KEYDOWN:
+        case SDL_KEYUP:
+        case SDL_TEXTEDITING:
+        case SDL_TEXTINPUT:
+            return true;
+            break;
+        }
+    }
+    if (io.WantCaptureMouse) {
+        switch (event.type) {
+        case SDL_MOUSEMOTION:
+        case SDL_MOUSEBUTTONDOWN:
+        case SDL_MOUSEBUTTONUP:
+        case SDL_MOUSEWHEEL:
+            return true;
+            break;
+        }
+    }
+
+    switch (event.type) {
+    case SDL_WINDOWEVENT:
+        switch (event.window.event) {
+        case SDL_WINDOWEVENT_RESIZED:
+            m_SwapChain->Resize();
+            break;
+        }
+        break;
+    default:
+        break;
+    }
+    return true;
+}
+
+bool Context::BeginFrame()
 {
     m_CommandList = m_Device->BeginFrame();
     m_FinalTexture = m_SwapChain->GetBackBuffer();
@@ -83,9 +158,11 @@ void Renderer::BeginFrame()
     ImGui_ImplDX12_NewFrame();
     ImGui_ImplSDL2_NewFrame();
     ImGui::NewFrame();
+
+    return true;
 }
 
-void Renderer::EndFrame()
+void Context::EndFrame()
 {
     // TODO: Render Scene
 
@@ -126,12 +203,7 @@ void Renderer::EndFrame()
     m_SwapChain->Present();
 }
 
-void Renderer::Resize()
-{
-    m_SwapChain->Resize();
-}
-
-IDXGIFactory6* Renderer::CreateFactory()
+IDXGIFactory6* Context::CreateFactory()
 {
 #if defined(_DEBUG)
     UINT flags = 0;
@@ -153,7 +225,7 @@ IDXGIFactory6* Renderer::CreateFactory()
     return factory;
 }
 
-IDXGIAdapter4* Renderer::ChooseAdapter(IDXGIFactory6* factory)
+IDXGIAdapter4* Context::ChooseAdapter(IDXGIFactory6* factory)
 {
     IDXGIAdapter4* adapter;
     for (UINT adapterIdx = 0; true; ++adapterIdx) {

@@ -1,8 +1,23 @@
 #include <mrdr.h>
-#include "mrdr/context.h"
+#include "mrdr/dx12/context.h"
 #include <spdlog/spdlog.h>
 #include <SDL.h>
 #include <SDL_main.h>
+
+static SDL_Window* InitWindow()
+{
+    SDL_Window* window = SDL_CreateWindow("D3D12 GLTF Viewer",
+        SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED,
+        800, 600,
+        SDL_WINDOW_RESIZABLE);
+
+    if (!window) {
+        SPDLOG_ERROR("Unable to create SDL window: {}", SDL_GetError());
+        abort();
+    }
+
+    return window;
+}
 
 int main(int argc, char* argv[])
 {
@@ -34,7 +49,8 @@ int main(int argc, char* argv[])
             }
         }
     }
-    mrdr::Context* ctx = new mrdr::Context(); // TODO: pass config
+    SDL_Window* window = InitWindow();
+    mrdr::dx12::Context* ctx = new mrdr::dx12::Context(window); // TODO: pass config
     mrdr_initialize(ctx, userdata_ptr);
 
     //
@@ -56,8 +72,6 @@ int main(int argc, char* argv[])
             mrdr_update(ctx, userdata_ptr);
             ctx->EndFrame();
         }
-
-        running = !ctx->ShouldQuit();
     }
 
     //
@@ -72,6 +86,7 @@ int main(int argc, char* argv[])
 #endif
     }
     delete ctx;
+    SDL_DestroyWindow(window);
     SDL_Quit();
 
     return 0;

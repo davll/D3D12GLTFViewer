@@ -4,68 +4,41 @@
 #include <stdint.h>
 #include <spdlog/spdlog.h>
 #include <imgui.h>
+#include "mrdr_math.h"
 
 namespace mrdr {
 
-class IObject;
-class ITexture;
-class IMaterial;
-class IMesh;
-class IEntity;
 class ICamera;
 class IScene;
-class IContext;
-
-struct BufferCreateInfo;
-struct TextureCreateInfo;
-struct MaterialCreateInfo;
-struct MeshCreateInfo;
-struct EntityCreateInfo;
-struct SceneCreateInfo;
-struct CameraCreateInfo;
-
-class IObject {
-public:
-    virtual void AddRef() = 0;
-    virtual void Release() = 0;
-};
 
 class IContext {
 public:
-    // Create Objects
-    // virtual ITexture* CreateTexture(const TextureCreateInfo* info) = 0;
-    // virtual IMaterial* CreateMaterial(const MaterialCreateInfo* info) = 0;
-    // virtual IMesh* CreateMesh(const MeshCreateInfo* info) = 0;
-    // virtual IEntity* CreateEntity(const EntityCreateInfo* info) = 0;
-    // virtual IScene* CreateScene(const SceneCreateInfo* info) = 0;
-    // virtual ICamera* CreateCamera(const CameraCreateInfo* info) = 0;
+    // Camera Manipulation
+    virtual ICamera* CreateCamera() = 0;
+    virtual void DestroyCamera(ICamera* camera) = 0;
 
-    // Main Loop Control
-    virtual void Quit() = 0;
+    // Scene Manipulation
+    virtual IScene* CreateScene() = 0;
+    virtual void DestroyScene(IScene* scene) = 0;
 };
 
-class ITexture : public IObject {
+class ICamera {
 public:
-    virtual void UploadPixels(uint8_t level, const void* data, size_t size) = 0;
+    virtual void SetDepthRange(float znear, float zfar) = 0;
+    virtual void SetOrthographicsProjection(float width, float height) = 0;
+    virtual void SetPerspectiveProjection(float fovy) = 0;
+
+    virtual void SetPosition(vec3& pos) = 0;
+    virtual void SetOrientation(quat& rot) = 0;
+
+    virtual void SetClearColor(vec4& color) = 0;
+
+    virtual void RenderScene(IScene* scene) = 0;
 };
 
-class IMaterial : public IObject {
-};
-
-class IMesh : public IObject {
-};
-
-class IEntity : public IObject {
-};
-
-class IScene : IObject {
+class IScene {
 public:
-    // TODO: add entity
-};
-
-class ICamera : public IObject {
-public:
-    // TODO: lookat, projection
+    virtual void DrawLine(const vec3& pt0, const vec3& pt1, const vec4& color) = 0;
 };
 
 }

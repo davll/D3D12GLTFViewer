@@ -18,8 +18,11 @@ add_executable(D3D12GLTFViewer
     guifont_ibmplexmono.cpp
     guistyle.h
     guistyle.cpp
+    tinygltf.cpp
 )
 
-target_link_libraries(D3D12GLTFViewer PRIVATE
+target_link_libraries(D3D12GLTFViewer
+PRIVATE
     mrdr
+    tinygltf json stb
 )
