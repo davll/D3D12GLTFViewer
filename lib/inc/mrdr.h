@@ -7,9 +7,7 @@
 
 namespace mrdr {
 
-
 class IObject;
-class IBuffer;
 class ITexture;
 class IMaterial;
 class IMesh;
@@ -26,51 +24,38 @@ struct EntityCreateInfo;
 struct SceneCreateInfo;
 struct CameraCreateInfo;
 
-extern void mrdr_main(IContext* ctx);
-
-class IContext {
-public:
-    virtual ~IContext() = 0;
-
-    // Create Objects
-    virtual IBuffer* CreateBuffer(const BufferCreateInfo* info) = 0;
-    virtual ITexture* CreateTexture(const TextureCreateInfo* info) = 0;
-    virtual IMaterial* CreateMaterial(const MaterialCreateInfo* info) = 0;
-    virtual IMesh* CreateMesh(const MeshCreateInfo* info) = 0;
-    virtual IEntity* CreateEntity(const EntityCreateInfo* info) = 0;
-    virtual IScene* CreateScene(const SceneCreateInfo* info) = 0;
-    virtual ICamera* CreateCamera(const CameraCreateInfo* info) = 0;
-
-    // Main Loop
-    virtual void ProcessEvents() = 0;
-    virtual void BeginUpdate(IScene* scene) = 0;
-    virtual void EndUpdate() = 0;
-    virtual void Render(ICamera* camera) = 0;
-};
-
 class IObject {
 public:
-    virtual void Retain() = 0;
+    virtual void AddRef() = 0;
     virtual void Release() = 0;
 };
 
-class IBuffer : IObject {
+class IContext {
 public:
-    virtual void UploadData(size_t dstOffset, const void* srcData, size_t size) = 0;
+    // Create Objects
+    // virtual ITexture* CreateTexture(const TextureCreateInfo* info) = 0;
+    // virtual IMaterial* CreateMaterial(const MaterialCreateInfo* info) = 0;
+    // virtual IMesh* CreateMesh(const MeshCreateInfo* info) = 0;
+    // virtual IEntity* CreateEntity(const EntityCreateInfo* info) = 0;
+    // virtual IScene* CreateScene(const SceneCreateInfo* info) = 0;
+    // virtual ICamera* CreateCamera(const CameraCreateInfo* info) = 0;
+
+    // Main Loop Control
+    virtual void Quit() = 0;
 };
 
-class ITexture : IObject {
+class ITexture : public IObject {
 public:
     virtual void UploadPixels(uint8_t level, const void* data, size_t size) = 0;
 };
 
-class IMaterial : IObject {
+class IMaterial : public IObject {
 };
 
-class IMesh : IObject {
+class IMesh : public IObject {
 };
 
-class IEntity : IObject {
+class IEntity : public IObject {
 };
 
 class IScene : IObject {
@@ -78,9 +63,15 @@ public:
     // TODO: add entity
 };
 
-class ICamera : IObject {
+class ICamera : public IObject {
 public:
     // TODO: lookat, projection
 };
 
 }
+
+// You should implement the functions below
+extern size_t mrdr_userdata_size();
+extern void mrdr_initialize(mrdr::IContext* ctx, void* udmem);
+extern void mrdr_update(mrdr::IContext* ctx, void* ud);
+extern void mrdr_shutdown(mrdr::IContext* ctx, void* ud);

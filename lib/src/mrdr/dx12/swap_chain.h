@@ -1,17 +1,18 @@
 #pragma once
 
 #include "common.h"
+#include "command_queue.h"
+#include "command_fence.h"
+
+struct SDL_Window;
 
 namespace mrdr {
-
-class CommandQueue;
 
 class SwapChain {
 public:
     struct CreateInfo {
         UINT NumFrames;
         IDXGIFactory6* Factory;
-        ID3D12Device* Device;
         CommandQueue* CommandQueue;
         SDL_Window* Window;
     };
@@ -39,11 +40,10 @@ private:
     const UINT m_NumFrames;
     ID3D12Device* m_Device;
     CommandQueue* m_CommandQueue;
-
     IDXGISwapChain3* m_SwapChain;
 
-    std::vector<UINT64> m_PresentWorkIds;
-    HANDLE m_FenceEvent;
+    CommandFence* m_Fence;
+    std::vector<UINT64> m_WorkIds;
 
     std::vector<ID3D12Resource*> m_BackBuffers;
     ID3D12DescriptorHeap* m_RenderTargetViewHeap;

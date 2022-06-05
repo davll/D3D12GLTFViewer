@@ -1,5 +1,8 @@
 #include "guifont.h"
 #include <imgui.h>
+#include <string.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 void guifont_add_chicago_font(int size_in_pixels)
 {

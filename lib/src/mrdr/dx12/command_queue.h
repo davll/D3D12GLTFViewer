@@ -4,6 +4,8 @@
 
 namespace mrdr {
 
+class CommandFence;
+
 class CommandQueue {
 public:
     enum class Type : UINT {
@@ -21,34 +23,18 @@ public:
     ~CommandQueue();
 
     inline ID3D12CommandQueue* GetCommandQueue() const;
-    inline ID3D12Fence* GetFence() const;
-    inline UINT64 GetWorkCount() const;
 
-    void SubmitCommands(UINT num, ID3D12CommandList* const* pCommandLists);
-    void SubmitWait(ID3D12Fence* fence, UINT64 workId);
-    UINT64 SubmitSignal();
-
-    BOOL SetWaitEvent(HANDLE event, UINT64 workId);
+    void SubmitCommands(gsl::span<ID3D12CommandList*> commandLists);
+    void SubmitWait(CommandFence* fence);
+    UINT64 SubmitSignal(CommandFence* fence);
 
 private:
     ID3D12CommandQueue* m_CommandQueue;
-    ID3D12Fence* m_Fence;
-    UINT64 m_WorkCount;
 };
 
 inline ID3D12CommandQueue* CommandQueue::GetCommandQueue() const
 {
     return m_CommandQueue;
-}
-
-inline ID3D12Fence* CommandQueue::GetFence() const
-{
-    return m_Fence;
-}
-
-inline UINT64 CommandQueue::GetWorkCount() const
-{
-    return m_WorkCount;
 }
 
 }

@@ -3,6 +3,7 @@ project(D3D12GLTFViewer)
 
 find_package(Threads REQUIRED)
 find_package(SDL2 CONFIG REQUIRED)
+find_package(Microsoft.GSL CONFIG REQUIRED)
 
 include(CheckSymbolExists)
 
@@ -20,5 +21,5 @@ add_executable(D3D12GLTFViewer
 )
 
 target_link_libraries(D3D12GLTFViewer PRIVATE
-    mrdr SDL2::SDL2 SDL2::SDL2main
+    mrdr
 )

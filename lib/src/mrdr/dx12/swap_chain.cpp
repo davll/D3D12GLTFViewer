@@ -1,26 +1,26 @@
-#include "SwapChain.h"
-#include "CommandQueue.h"
+#include "swap_chain.h"
+#include <SDL.h>
 #include <SDL_syswm.h>
 
 namespace mrdr {
 
 SwapChain::SwapChain(const CreateInfo& info)
 : m_NumFrames(info.NumFrames)
-, m_PresentWorkIds((size_t)info.NumFrames, 0)
-, m_Device(info.Device)
+, m_WorkIds((size_t)info.NumFrames, 0)
 , m_CommandQueue(info.CommandQueue)
 , m_BackBuffers((size_t)info.NumFrames)
 {
-    m_Device->AddRef();
+    MRDR_CHKHR(
+        m_CommandQueue->GetCommandQueue()->GetDevice(IID_PPV_ARGS(&m_Device))
+    );
+
     Init(info);
 }
 
 SwapChain::~SwapChain()
 {
     WaitAll();
-
-    CloseHandle(m_FenceEvent);
-
+    delete m_Fence;
     m_RenderTargetViewHeap->Release();
     ClearBuffers();
     m_SwapChain->Release();
@@ -36,11 +36,11 @@ void SwapChain::Present()
         m_SwapChain->Present(1, 0)
     );
 
-    UINT64 workId = m_CommandQueue->SubmitSignal();
-    m_PresentWorkIds[prevBufferIdx] = workId;
+    UINT64 workId = m_CommandQueue->SubmitSignal(m_Fence);
+    m_WorkIds[prevBufferIdx] = workId;
 
-    workId = m_PresentWorkIds[m_SwapChain->GetCurrentBackBufferIndex()];
-    Wait(workId);
+    //workId = m_WorkIds[m_SwapChain->GetCurrentBackBufferIndex()];
+    //Wait(workId);
 }
 
 void SwapChain::Resize()
@@ -54,14 +54,12 @@ void SwapChain::Resize()
 
 void SwapChain::Wait(UINT64 workId)
 {
-    if (m_CommandQueue->SetWaitEvent(m_FenceEvent, workId)) {
-        WaitForSingleObject(m_FenceEvent, INFINITE);
-    }
+    m_Fence->CpuWait(workId);
 }
 
 void SwapChain::WaitAll()
 {
-    Wait(m_CommandQueue->GetWorkCount());
+    m_Fence->CpuWait();
 }
 
 void SwapChain::Init(const CreateInfo& info)
@@ -72,7 +70,8 @@ void SwapChain::Init(const CreateInfo& info)
     SDL_SysWMinfo wminfo;
     SDL_VERSION(&wminfo.version);
     if (SDL_GetWindowWMInfo(info.Window, &wminfo) == 0) {
-        MRDR_FAIL("Unable to get SDL_WMInfo");
+        SPDLOG_ERROR("Unable to get SDL WMInfo");
+        abort();
     }
     HWND hwnd = wminfo.info.win.window;
 
@@ -104,10 +103,10 @@ void SwapChain::Init(const CreateInfo& info)
     swapChain1->Release();
     m_SwapChain = swapChain3;
 
-    m_FenceEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
-    if (!m_FenceEvent) {
-        abort();
-    }
+    m_Fence = new CommandFence({
+        m_Device,
+        TRUE,
+    });
 
     InitDescriptorHeap();
     SetupBuffers();
