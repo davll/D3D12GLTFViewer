@@ -34,4 +34,6 @@ void mrdr_update(mrdr::IContext* ctx, void* ud)
 
 void mrdr_shutdown(mrdr::IContext* ctx, void* ud)
 {
+    UserData* userdata = (UserData*)ud;
+    userdata->~UserData();
 }
